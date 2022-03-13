@@ -1,3 +1,6 @@
+##Fringe_cGAN Code written by Hanxun Jin
+##Please cite: Jin, H., Clifton, R. J., & Kim, K. S. (2021). Dynamic fracture of a bicontinuously nanostructured copolymer: A deep learning analysis of big-data-generating experiment. arXiv preprint arXiv:2112.01971.
+
 import tensorflow as tf
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.initializers import RandomNormal
@@ -10,22 +13,16 @@ from tensorflow.keras.layers import Activation
 from tensorflow.keras.layers import Concatenate
 from tensorflow.keras.layers import BatchNormalization
 from tensorflow.keras.utils import plot_model
-
 from sklearn.model_selection import train_test_split
-
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from PIL import Image
 import numpy as np
 from numpy import asarray
 import glob
-
 from random import randint
 import random
 import datetime
-
-
-# In[122]:
 
 
 def plot_results(images, epoch, label, n_cols=None):
@@ -40,7 +37,6 @@ def plot_results(images, epoch, label, n_cols=None):
     plt.figure(figsize=(n_cols, n_rows))
     
     
-    
     filename = 'Epoch_'+str(epoch)+ 'label_'+str(label)
     
     for index, image in enumerate(images):
@@ -53,9 +49,6 @@ def plot_results(images, epoch, label, n_cols=None):
     plt.close()
 
 
-# In[123]:
-
-
 # load full fringe images
 img_size =128
 newsize=(img_size,img_size)
@@ -64,8 +57,6 @@ images_array_label = asarray(images)
 
 images_array_label= (images_array_label.reshape(-1, img_size, img_size, 1))/255.0
 
-#check one img
-#plt.imshow(images_array_label[500],cmap='gray')
 
 # load missed fringe images
 newsize=(img_size,img_size)
@@ -80,15 +71,7 @@ images_array_input= (images_array_input.reshape(-1, img_size, img_size, 1))/255.
 #prepare the dataset
 #dataset_norm = [images_array_input, images_array_label]
 
-
-# In[124]:
-
-
 X_train, X_test, y_train, y_test = train_test_split(images_array_input, images_array_label, test_size=0.1)
-
-
-# In[125]:
-
 
 #train dataset
 dataset_a=tf.data.Dataset.from_tensor_slices(X_train) # miss fringe image
@@ -99,8 +82,6 @@ zip_dataset=tf.data.Dataset.zip((dataset_b,dataset_a))
 BATCH_SIZE = 32
 train_dataset = zip_dataset.shuffle(961).batch(BATCH_SIZE, drop_remainder=True).prefetch(1)
 
-
-
 #test dataset
 dataset_a=tf.data.Dataset.from_tensor_slices(X_test) # miss fringe image
 dataset_b=tf.data.Dataset.from_tensor_slices(y_test) # full fringe image
@@ -109,10 +90,6 @@ zip_dataset=tf.data.Dataset.zip((dataset_b,dataset_a))
 
 BATCH_SIZE = 32
 test_dataset = zip_dataset.shuffle(961).batch(BATCH_SIZE, drop_remainder=True).prefetch(1)
-
-
-# In[111]:
-
 
 def build_generator():
         """U-Net Generator"""
@@ -160,10 +137,6 @@ def build_generator():
 
         return Model(d0, output_img)
 
-
-# In[126]:
-
-
 def build_discriminator():
         # a small function to make one layer of the discriminator
         def d_layer(layer_input, filters, f_size=4, bn=True):
@@ -188,10 +161,6 @@ def build_discriminator():
         validity = Conv2D(1, kernel_size=4, strides=1, padding='same')(d4)
 
         return Model([img_A, img_B], validity)
-
-
-# In[132]:
-
 
 # Input shape
 img_rows = 128
@@ -236,9 +205,6 @@ combined = Model(inputs=[img_A, img_B], outputs=[valid, fake_A])
 combined.compile(loss=['mse', 'mae'],
                               loss_weights=[1, 100],
                               optimizer=optimizer)
-
-
-# In[141]:
 
 
 def train(train_dataset,test_dataset, epochs, batch_size=1, show_interval=1):
@@ -316,9 +282,6 @@ def train(train_dataset,test_dataset, epochs, batch_size=1, show_interval=1):
                                                                          g_loss[0], cur_norm_train,cur_norm_test,
                                                                          elapsed_time))
         return norm_train_epoch, norm_test_epoch
-
-
-# In[142]:
 
 
 norm_train_epoch, norm_test_epoch = train(train_dataset,test_dataset, epochs=500, batch_size=32, show_interval=1)
